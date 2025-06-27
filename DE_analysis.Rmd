@@ -1,0 +1,199 @@
+---
+title: "Data Engineering"
+author: "Tyler Riddick"
+date: "2024-04-23"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+```
+
+```{r}
+pdx = read_csv('C:\\Users\\tyler\\OneDrive\\Documents\\MSDS\\Spring2024\\DataEng\\portland_joined.csv')
+sea = read_csv('C:\\Users\\tyler\\OneDrive\\Documents\\MSDS\\Spring2024\\DataEng\\seattle_joined.csv')
+```
+
+```{r}
+pdx = unique(pdx)
+sea = unique(sea)
+```
+
+```{r}
+sea
+```
+
+```{r}
+pdx %>%
+  mutate(type = factor(case_when(
+    type == 1 ~ 'Construction',
+    type == 2 ~ 'Event',
+    type == 3 ~ 'Congestion',
+    type == 4 ~ 'Accident'
+  ),levels = c('Accident','Congestion','Event','Construction')),
+         weather = factor(weather, levels = c('Rain','Clouds','Clear'))) %>%
+  filter(type %in% c('Congestion','Accident')) %>%
+  group_by(weather,type) %>%
+  summarize(count = n()) %>%
+  mutate(weighted = case_when(
+    weather == 'Rain' ~ count/0.03,
+    weather == 'Clouds' ~ count/0.78,
+    weather == 'Clear' ~ count/0.19
+  )) %>%
+  ggplot(aes(x=weather, y = weighted, fill=type)) +
+  geom_bar(position='dodge',stat='identity',color='black')+
+  scale_fill_manual(values=c('darkred','orangered1'))+
+  labs(
+    x = 'Weather Type',
+    y = 'Weighted Sum of Incidents',
+    title = 'Portland Traffic Incidents April 7th to April 21, 2024',
+    fill = 'Incident Type'
+  )+
+  theme_gray()+
+  theme(plot.title = element_text(size=24),
+        axis.title = element_text(size = 14),
+        legend.text = element_text(size = 13),
+        legend.title = element_text(size = 16),
+        axis.text = element_text(size=13))
+ggsave('portland_weather_incidents.png',width=12,height=8,units="in")
+```
+
+```{r}
+pdx %>%
+  mutate(type = factor(case_when(
+    type == 1 ~ 'Construction',
+    type == 2 ~ 'Event',
+    type == 3 ~ 'Congestion',
+    type == 4 ~ 'Accident'
+  ),levels = c('Accident','Congestion','Event','Construction')),
+         weather = factor(weather, levels = c('Rain','Clouds','Clear'))) %>%
+  filter(type %in% c('Congestion','Accident')) %>%
+  group_by(weather,type) %>%
+  summarize(count = n()) %>%
+  mutate(weighted = case_when(
+    weather == 'Rain' ~ count/0.03,
+    weather == 'Clouds' ~ count/0.78,
+    weather == 'Clear' ~ count/0.19
+  )) %>%
+  ggplot(aes(x=weather, y = count, fill=type)) +
+  geom_bar(position='dodge',stat='identity',color='black')+
+  scale_fill_manual(values=c('darkred','orangered1'))+
+  labs(
+    x = 'Weather Type',
+    y = 'Sum of Incidents',
+    title = 'Portland Traffic Incidents April 7th to April 21, 2024',
+    fill = 'Incident Type'
+  )+
+  theme_gray()+
+  theme(plot.title = element_text(size=24),
+        axis.title = element_text(size = 14),
+        legend.text = element_text(size = 13),
+        legend.title = element_text(size = 16),
+        axis.text = element_text(size=13))
+ggsave('portland_weather_incidents_unweighted.png',width=12,height=8,units="in")
+```
+
+```{r}
+pdx %>%
+  mutate(type = factor(case_when(
+    type == 1 ~ 'Construction',
+    type == 2 ~ 'Event',
+    type == 3 ~ 'Congestion',
+    type == 4 ~ 'Accident'
+  ),levels = c('Accident','Congestion','Event','Construction')),
+         weather = factor(weather, levels = c('Clouds','Clear','Rain'))) %>%
+  filter(type %in% c('Congestion','Accident')) %>%
+  group_by(weather,type) %>%
+  summarize(count = n()) %>%
+  mutate(weighted = case_when(
+    weather == 'Rain' ~ count/0.03,
+    weather == 'Clouds' ~ count/0.78,
+    weather == 'Clear' ~ count/0.19
+  ))
+```
+```{r}
+sea %>%
+  mutate(type = factor(case_when(
+    type == 1 ~ 'Construction',
+    type == 2 ~ 'Event',
+    type == 3 ~ 'Congestion',
+    type == 4 ~ 'Accident'
+  ),levels = c('Accident','Congestion','Event','Construction')),
+         weather = factor(weather, levels = c('Rain','Clouds','Clear','Mist'))) %>%
+  filter(type %in% c('Congestion','Accident')) %>%
+  group_by(weather,type) %>%
+  summarize(count = n()) %>%
+  mutate(weighted = case_when(
+    weather == 'Rain' ~ count/0.095,
+    weather == 'Clouds' ~ count/0.59,
+    weather == 'Clear' ~ count/0.30,
+    weather == 'Mist' ~ count/0.08
+  )) %>%
+  filter(weather %in% c('Clouds','Clear','Rain')) %>%
+  ggplot(aes(x=weather, y = weighted, fill=type)) +
+  geom_bar(position='dodge',stat='identity',color='black')+
+  scale_fill_manual(values=c('darkred','orangered1'))+
+  labs(
+    x = 'Weather Type',
+    y = 'Weighted Sum of Incidents',
+    title = 'Seattle Traffic Incidents April 7th to April 21, 2024',
+    fill = 'Incident Type'
+  )+
+  theme_gray()+
+  theme(plot.title = element_text(size=24),
+        axis.title = element_text(size = 14),
+        legend.text = element_text(size = 13),
+        legend.title = element_text(size = 16),
+        axis.text = element_text(size=13))
+ggsave('seattle_weather_incidents.png',width=12,height=8,units="in")
+```
+
+```{r}
+sea %>%
+  mutate(type = factor(case_when(
+    type == 1 ~ 'Construction',
+    type == 2 ~ 'Event',
+    type == 3 ~ 'Congestion',
+    type == 4 ~ 'Accident'
+  ),levels = c('Accident','Congestion','Event','Construction')),
+         weather = factor(weather, levels = c('Rain','Clouds','Clear','Mist'))) %>%
+  filter(type %in% c('Congestion','Accident')) %>%
+  group_by(weather,type) %>%
+  summarize(count = n()) %>%
+  mutate(weighted = case_when(
+    weather == 'Rain' ~ count/0.03,
+    weather == 'Clouds' ~ count/0.78,
+    weather == 'Clear' ~ count/0.19
+  )) %>%
+  ggplot(aes(x=weather, y = count, fill=type)) +
+  geom_bar(position='dodge',stat='identity',color='black')+
+  scale_fill_manual(values=c('darkred','orangered1'))+
+  labs(
+    x = 'Weather Type',
+    y = 'Sum of Incidents',
+    title = 'Seattle Traffic Incidents April 7th to April 21, 2024',
+    fill = 'Incident Type'
+  )+
+  theme_gray()+
+  theme(plot.title = element_text(size=24),
+        axis.title = element_text(size = 14),
+        legend.text = element_text(size = 13),
+        legend.title = element_text(size = 16),
+        axis.text = element_text(size=13))
+ggsave('seattle_weather_incidents_unweighted.png',width=12,height=8,units="in")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
